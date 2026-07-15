@@ -4,7 +4,7 @@
     // ────────────────────────────────
     // View counter config
     // ────────────────────────────────
-    const COUNTER_NAMESPACE = 'thoughts-notes-blog';
+    //const COUNTER_NAMESPACE = 'thoughts-notes-blog';
     const COUNTER_API_BASE = 'https://hits.seeyoufarm.com/api/count/incr';
 
     // ────────────────────────────────
@@ -79,7 +79,7 @@
     // ────────────────────────────────
     function renderHome() {
         updateActiveNav('home');
-        document.title = 'Thoughts & Notes';
+        document.title = 'adobug.github.io';
 
         let postsHTML = '';
         if (typeof POSTS === 'undefined' || POSTS.length === 0) {
@@ -108,7 +108,7 @@
         app.className = 'container wide';
         app.innerHTML = `
             <div class="blog-header">
-                <h1>Thoughts &amp; Notes</h1>
+                <h1>adobug.github.io</h1>
                 <p class="subtitle">Essays on craft, clarity, and the quiet art of thinking deeply.</p>
                 <span class="accent-line"></span>
             </div>
@@ -119,7 +119,7 @@
 
     function renderAbout() {
         updateActiveNav('about');
-        document.title = 'About — Thoughts & Notes';
+        document.title = 'About';
         app.className = 'container';
         app.innerHTML = `
             <div class="single-post">
@@ -163,12 +163,12 @@
                     </a>
                     <div class="empty-state"><p>Post not found.</p></div>
                 </div>`;
-            document.title = 'Post Not Found — Thoughts & Notes';
+            document.title = 'Post Not Found';
             bindBackLink();
             return;
         }
 
-        document.title = `${post.title} — Thoughts & Notes`;
+        document.title = `${post.title} — adobug.github.io`;
         app.className = 'container';
         app.innerHTML = `
             <div class="single-post">
