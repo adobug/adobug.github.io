@@ -1,11 +1,6 @@
 // script.js – blog engine & routing
 (function() {
     const SITE_URL = 'https://adobug.github.io';
-    // ────────────────────────────────
-    // View counter config
-    // ────────────────────────────────
-    //const COUNTER_NAMESPACE = 'thoughts-notes-blog';
-    const COUNTER_API_BASE = 'https://hits.seeyoufarm.com/api/count/incr';
 
     // ────────────────────────────────
     // DOM elements
@@ -45,27 +40,30 @@
     }
 
     // ────────────────────────────────
-    // View counter helpers
+    // View counter helpers (localStorage)
     // ────────────────────────────────
-    async function fetchAndIncrementViews(slug) {
-        const url = `${SITE_URL}/posts/${slug}`;  // fictional clean URL
-        try {
-            const response = await fetch(`${COUNTER_API_BASE}?url=${encodeURIComponent(url)}`);
-            if (!response.ok) throw new Error('API error');
-            const data = await response.json();
-            return data.count;   // the service returns { count: number, … }
-        } catch (err) {
-            console.warn('View counter error:', err);
-            return null;
+    // Count views per post, stored locally in the browser.
+    // Each post gets counted once per day per device.
+    function incrementView(slug) {
+        const key = `views-${slug}`;
+        const dayKey = `views-day-${slug}`;
+        const today = new Date().toDateString();
+
+        // If already counted today, just return the stored count
+        if (localStorage.getItem(dayKey) === today) {
+            return parseInt(localStorage.getItem(key) || '0');
         }
+
+        // Otherwise increment and store today's date
+        let count = parseInt(localStorage.getItem(key) || '0') + 1;
+        localStorage.setItem(key, count);
+        localStorage.setItem(dayKey, today);
+        return count;
     }
 
-    async function getViewsOnly(slug) {
-        // hits.seeyoufarm.com does not have a read‑without‑increment endpoint,
-        // so for homepage cards we'll just fetch/increment to avoid complexity.
-        // If you want to show views on cards, you can call fetchAndIncrementViews.
-        // I'm keeping this function for compatibility; it will return null.
-        return null;
+    function getViews(slug) {
+        const key = `views-${slug}`;
+        return parseInt(localStorage.getItem(key) || '0');
     }
 
     function formatViews(count) {
@@ -109,7 +107,7 @@
         app.innerHTML = `
             <div class="blog-header">
                 <h1>adobug.github.io</h1>
-                <p class="subtitle">Essays on craft, clarity, and the quiet art of thinking deeply.</p>
+                <p class="subtitle">Short articles about my thoughts and feelings. Hope you enjoy!</p>
                 <span class="accent-line"></span>
             </div>
             <div class="post-list">
@@ -140,7 +138,7 @@
                     </p>
                     <h2>Views Counter</h2>
                     <p>
-                        Each article shows a live view count powered by <a href="https://countapi.xyz" target="_blank" rel="noopener">CountAPI</a>. No tracking, no cookies, completely anonymous.
+                        Each article shows a view count stored locally in your browser. No external tracking, no cookies, completely anonymous and private.
                     </p>
                     <blockquote>
                         <p>"Good design is as little design as possible." — Dieter Rams</p>
@@ -149,10 +147,27 @@
             </div>`;
     }
 
+    // ────────────────────────────────
+    // Render a single post
+    // ────────────────────────────────
     async function renderPost(slug) {
-        updateActiveNav('post');
-        const post = (typeof POSTS !== 'undefined') ? POSTS.find(p => p.slug === slug) : undefined;
+        // Increment the view count for this specific post
+        const viewCount = incrementView(slug);
 
+        // Show loading state immediately
+        app.className = 'container';
+        app.innerHTML = `
+            <div class="single-post">
+                <a href="#" class="back-link" id="backLink">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                    Back to all posts
+                </a>
+                <p style="color: var(--text-muted); text-align:center; padding:40px;">Loading post…</p>
+            </div>`;
+        bindBackLink();
+
+        // Find the post data
+        const post = POSTS.find(p => p.slug === slug);
         if (!post) {
             app.className = 'container';
             app.innerHTML = `
@@ -169,16 +184,6 @@
         }
 
         document.title = `${post.title} — adobug.github.io`;
-        app.className = 'container';
-        app.innerHTML = `
-            <div class="single-post">
-                <a href="#" class="back-link" id="backLink">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
-                    Back to all posts
-                </a>
-                <p style="color: var(--text-muted); text-align:center; padding:40px;">Loading post…</p>
-            </div>`;
-        bindBackLink();
 
         try {
             const response = await fetch(post.file);
@@ -188,9 +193,9 @@
             marked.setOptions({ breaks: false, gfm: true });
             const htmlContent = marked.parse(markdown);
 
-            const viewCount = await fetchAndIncrementViews(slug);
+            // Build the views display using the already-incremented count
             const viewsHTML = `
-                <span class="view-count ${viewCount === null ? 'error' : ''}">
+                <span class="view-count">
                     <span class="icon">👁</span> ${formatViews(viewCount)} views
                 </span>`;
 
