@@ -1,6 +1,9 @@
 // script.js – blog engine & routing
 (function() {
     const SITE_URL = 'https://adobug.github.io';
+    // GoatCounter site code, e.g. 'adobug' for https://adobug.goatcounter.com.
+    // Counts visits per page with no cookies or personal data. Empty = off.
+    const GOATCOUNTER_CODE = 'adobug';
 
     // ────────────────────────────────
     // DOM elements
@@ -211,6 +214,30 @@
         if (route.view === 'home') renderHome();
         else if (route.view === 'post' && route.slug) renderPost(route.slug);
         else if (route.view === 'about') renderAbout();
+        countVisit();
+    }
+
+    // ────────────────────────────────
+    // Visit counter (GoatCounter)
+    // ────────────────────────────────
+    // Routes live in the hash, which GoatCounter ignores by default,
+    // so each route change is counted by hand.
+    function countVisit() {
+        if (!window.goatcounter || !window.goatcounter.count) return;
+        window.goatcounter.count({
+            path: location.pathname + location.hash,
+            title: document.title,
+        });
+    }
+
+    if (GOATCOUNTER_CODE) {
+        const gc = document.createElement('script');
+        gc.async = true;
+        gc.src = 'https://gc.zgo.at/count.js';
+        gc.dataset.goatcounter = `https://${GOATCOUNTER_CODE}.goatcounter.com/count`;
+        gc.dataset.goatcounterSettings = '{"no_onload": true}';
+        gc.onload = countVisit;  // count the page the visitor landed on
+        document.head.appendChild(gc);
     }
 
     navHome.addEventListener('click', function(e) {
