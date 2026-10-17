@@ -40,39 +40,6 @@
     }
 
     // ────────────────────────────────
-    // View counter helpers (localStorage)
-    // ────────────────────────────────
-    // Count views per post, stored locally in the browser.
-    // Each post gets counted once per day per device.
-    function incrementView(slug) {
-        const key = `views-${slug}`;
-        const dayKey = `views-day-${slug}`;
-        const today = new Date().toDateString();
-
-        // If already counted today, just return the stored count
-        if (localStorage.getItem(dayKey) === today) {
-            return parseInt(localStorage.getItem(key) || '0');
-        }
-
-        // Otherwise increment and store today's date
-        let count = parseInt(localStorage.getItem(key) || '0') + 1;
-        localStorage.setItem(key, count);
-        localStorage.setItem(dayKey, today);
-        return count;
-    }
-
-    function getViews(slug) {
-        const key = `views-${slug}`;
-        return parseInt(localStorage.getItem(key) || '0');
-    }
-
-    function formatViews(count) {
-        if (count === null || count === undefined) return '—';
-        if (count >= 1000) return (count / 1000).toFixed(1) + 'k';
-        return count.toString();
-    }
-
-    // ────────────────────────────────
     // Rendering
     // ────────────────────────────────
     function renderHome() {
@@ -117,28 +84,17 @@
 
     function renderAbout() {
         updateActiveNav('about');
-        document.title = 'About';
+        document.title = 'About — adobug.github.io';
         app.className = 'container';
         app.innerHTML = `
             <div class="single-post">
                 <div class="post-content">
-                    <h1>About This Blog</h1>
+                    <h1>About</h1>
                     <p>
-                        A minimalist blog that's easy to host and update on GitHub Pages. Articles are written in Markdown and rendered client-side.
+                        Hi, I'm adobug. I'm a med student who'd rather be out running or on a bike, and who still finds time to code now and then.
                     </p>
-                    <h2>How to Add a New Post</h2>
-                    <ol>
-                        <li>Create a <code>.md</code> file in the <code>/posts/</code> folder.</li>
-                        <li>Add an entry to the <code>POSTS</code> array in <code>posts.js</code>.</li>
-                        <li>Push to GitHub – the post appears instantly.</li>
-                    </ol>
-                    <h2>Adding Images</h2>
                     <p>
-                        Use standard Markdown: <code>![Alt text](image-url)</code>. For Google Photos or iCloud, use a <strong>direct link to the image file</strong> (right-click the image and copy the image address).
-                    </p>
-                    <h2>Views Counter</h2>
-                    <p>
-                        Each article shows a view count stored locally in your browser. No external tracking, no cookies, completely anonymous and private.
+                        This is where I write short pieces about what's on my mind: sports, studying, and trying to hold on to the things I love doing while life gets busier.
                     </p>
                     <blockquote>
                         <p>"Good design is as little design as possible." — Dieter Rams</p>
@@ -151,9 +107,6 @@
     // Render a single post
     // ────────────────────────────────
     async function renderPost(slug) {
-        // Increment the view count for this specific post
-        const viewCount = incrementView(slug);
-
         // Show loading state immediately
         app.className = 'container';
         app.innerHTML = `
@@ -178,7 +131,7 @@
                     </a>
                     <div class="empty-state"><p>Post not found.</p></div>
                 </div>`;
-            document.title = 'Post Not Found';
+            document.title = 'Post Not Found — adobug.github.io';
             bindBackLink();
             return;
         }
@@ -193,22 +146,16 @@
             marked.setOptions({ breaks: false, gfm: true });
             const htmlContent = marked.parse(markdown);
 
-            // Build the views display using the already-incremented count
-            const viewsHTML = `
-                <span class="view-count">
-                    <span class="icon">👁</span> ${formatViews(viewCount)} views
-                </span>`;
-
             app.innerHTML = `
                 <div class="single-post">
                     <a href="#" class="back-link" id="backLink">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
                         Back to all posts
                     </a>
+                    <h1 class="post-title">${escapeHTML(post.title)}</h1>
                     <div class="post-meta">
                         <span class="post-date">${formatDate(post.date)}</span>
                         ${(post.tags || []).map(t => `<span class="tag">${escapeHTML(t)}</span>`).join('')}
-                        ${viewsHTML}
                     </div>
                     <div class="post-content">${htmlContent}</div>
                 </div>`;
@@ -238,7 +185,6 @@
             backLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 navigate('home');
-                renderHome();
             });
         }
     }
@@ -270,17 +216,14 @@
     navHome.addEventListener('click', function(e) {
         e.preventDefault();
         navigate('home');
-        renderHome();
     });
     navAbout.addEventListener('click', function(e) {
         e.preventDefault();
         navigate('about');
-        renderAbout();
     });
     navBrand.addEventListener('click', function(e) {
         e.preventDefault();
         navigate('home');
-        renderHome();
     });
 
     window.addEventListener('hashchange', handleHashChange);

@@ -6,7 +6,7 @@
     --text-primary: #1a1816;
     --text-secondary: #4a4540;
     --text-tertiary: #7a7268;
-    --text-muted: #a0988c;
+    --text-muted: #766e64;
     --border-subtle: #e5e0d8;
     --border-card: #ebe6dd;
     --accent-warm: #c75c3c;
@@ -32,7 +32,7 @@
         --text-primary: #ede8e0;
         --text-secondary: #c5bfb5;
         --text-tertiary: #9e968b;
-        --text-muted: #706a61;
+        --text-muted: #948c81;
         --border-subtle: #35312b;
         --border-card: #3d3932;
         --accent-warm: #d4836a;
@@ -267,14 +267,6 @@ body {
     margin-right: 6px;
     letter-spacing: 0.01em;
 }
-.post-card .card-views {
-    display: none;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-top: 10px;
-}
 
 /* Single post */
 .single-post {
@@ -314,14 +306,7 @@ body {
 }
 .post-content em, .post-content i {
     font-size: 0.95em;
-    color: #a0988c;   /* light mode: noticeably lighter than regular paragraph */
-}
-
-/* Override for dark mode: make italic darker than surrounding text */
-@media (prefers-color-scheme: dark) {
-    .post-content em, .post-content i {
-        color: #5e5850;   /* a bit darker than the lighter paragraph text */
-    }
+    color: var(--text-tertiary);   /* quieter than body text, still readable */
 }
 .post-content h1, .post-content h2, .post-content h3, .post-content h4 {
     font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
@@ -413,7 +398,16 @@ body {
     color: var(--text-primary);
 }
 
-/* Meta & view counter */
+/* Post title & meta */
+.post-title {
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
 .post-meta {
     display: flex;
     align-items: center;
@@ -440,19 +434,6 @@ body {
     color: var(--accent-warm);
     letter-spacing: 0.01em;
 }
-.view-count {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    background: var(--bg-secondary);
-    padding: 3px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.01em;
-}
-.view-count .icon { font-size: 1rem; }
-.view-count.error { color: #b0a89c; }
 
 /* Footer */
 .footer {
