@@ -49,8 +49,11 @@
         updateActiveNav('home');
         document.title = 'adobug.github.io';
 
+        // Drafts stay off the list but can still be opened by their link.
+        const published = typeof POSTS === 'undefined' ? [] : POSTS.filter(p => !p.draft);
+
         let postsHTML = '';
-        if (typeof POSTS === 'undefined' || POSTS.length === 0) {
+        if (published.length === 0) {
             postsHTML = `
                 <div class="empty-state">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -59,7 +62,7 @@
                     <p>No posts yet.<br>Add entries to <code>posts.js</code> and place markdown files in <code>/posts/</code>.</p>
                 </div>`;
         } else {
-            const sorted = [...POSTS].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sorted = [...published].sort((a, b) => new Date(b.date) - new Date(a.date));
             postsHTML = sorted.map(post => `
                 <a href="#/post/${post.slug}" class="post-card">
                     <div class="post-card-date">${formatDate(post.date)}</div>
@@ -147,7 +150,7 @@
             const markdown = await response.text();
 
             marked.setOptions({ breaks: false, gfm: true });
-            const htmlContent = marked.parse(markdown);
+            const htmlContent = renderMarkdown(markdown);
 
             app.innerHTML = `
                 <div class="single-post">
@@ -158,6 +161,7 @@
                     <h1 class="post-title">${escapeHTML(post.title)}</h1>
                     <div class="post-meta">
                         <span class="post-date">${formatDate(post.date)}</span>
+                        ${post.draft ? '<span class="tag draft-tag">Draft</span>' : ''}
                         ${(post.tags || []).map(t => `<span class="tag">${escapeHTML(t)}</span>`).join('')}
                     </div>
                     <div class="post-content">${htmlContent}</div>
@@ -181,6 +185,76 @@
             bindBackLink();
         }
     }
+
+    // ────────────────────────────────
+    // Footnotes
+    // ────────────────────────────────
+    // Write [^1] after a word, and "[^1]: the note" on its own line anywhere
+    // in the post. Each note pops up on hover (tap on phones) and is also
+    // listed at the end of the post. Notes are numbered in reading order.
+    function renderMarkdown(markdown) {
+        const notes = new Map();
+        const body = markdown.replace(/^\[\^([^\]\s]+)\]:[ \t]*(.+)$/gm, (_, id, text) => {
+            notes.set(id, text.trim());
+            return '';
+        });
+
+        // Swap refs for placeholders so marked leaves them alone.
+        const order = [];
+        const withPlaceholders = body.replace(/\[\^([^\]\s]+)\]/g, (match, id) => {
+            if (!notes.has(id)) return match;
+            if (!order.includes(id)) order.push(id);
+            return `%%fn${order.indexOf(id) + 1}%%`;
+        });
+
+        const seen = new Set();
+        let html = marked.parse(withPlaceholders).replace(/%%fn(\d+)%%/g, (_, n) => {
+            const note = marked.parseInline(notes.get(order[n - 1]));
+            const id = seen.has(n) ? '' : ` id="fnref-${n}"`;
+            seen.add(n);
+            return `<sup class="fn"><a href="#" class="footnote-ref" data-fn="${n}"${id} aria-label="Note ${n}">${n}</a>` +
+                `<span class="footnote-tooltip" role="tooltip">${note}</span></sup>`;
+        });
+
+        if (order.length) {
+            html += `<section class="footnotes"><ol>${order.map((id, i) => `
+                <li id="fn-${i + 1}">${marked.parseInline(notes.get(id))}
+                    <a href="#" class="footnote-backref" data-fnref="${i + 1}" aria-label="Back to text">↩</a>
+                </li>`).join('')}</ol></section>`;
+        }
+        return html;
+    }
+
+    // Footnote links can't use real #anchors, since the hash is the route.
+    const canHover = window.matchMedia('(hover: hover)').matches;
+
+    function closeFootnotes(except) {
+        app.querySelectorAll('sup.fn.open').forEach(el => { if (el !== except) el.classList.remove('open'); });
+    }
+
+    app.addEventListener('click', function(e) {
+        const ref = e.target.closest('.footnote-ref');
+        const backref = e.target.closest('.footnote-backref');
+        if (ref) {
+            e.preventDefault();
+            if (canHover) {
+                // The popup already shows on hover, so a click jumps to the note list.
+                document.getElementById(`fn-${ref.dataset.fn}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                const sup = ref.parentElement;
+                closeFootnotes(sup);
+                sup.classList.toggle('open');
+            }
+        } else if (backref) {
+            e.preventDefault();
+            document.getElementById(`fnref-${backref.dataset.fnref}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (!e.target.closest('.footnote-tooltip')) {
+            closeFootnotes();
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeFootnotes();
+    });
 
     function bindBackLink() {
         const backLink = document.getElementById('backLink');

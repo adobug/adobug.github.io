@@ -9,4 +9,12 @@ const POSTS = [
         excerpt: 'My first post! A talk about my struggles.',
         tags: ['tech', 'sports', 'studying'],
     },
+    {
+        slug: "on-multiple-accounts",
+        title: "On: multiple accounts",
+        date: "2026-11-06",
+        file: 'posts/on-multiple-accounts.md',
+        excerpt: "accounts, accounts, accounts...",
+        tags: ['social'],
+    },
 ];

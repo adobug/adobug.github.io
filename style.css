@@ -435,6 +435,92 @@ body {
     letter-spacing: 0.01em;
 }
 
+.post-meta .draft-tag {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-card);
+}
+
+/* Footnotes */
+.post-content sup.fn {
+    position: relative;
+    line-height: 0;
+}
+.post-content a.footnote-ref {
+    display: inline-block;
+    margin: 0 2px;
+    padding: 4px 5px 3px;
+    border-radius: 4px;
+    border-bottom: none;
+    background: var(--accent-subtle);
+    color: var(--accent-warm);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: background var(--transition), color var(--transition);
+}
+.post-content a.footnote-ref:hover,
+.post-content sup.fn.open a.footnote-ref {
+    background: var(--accent-warm);
+    color: var(--bg-card);
+}
+.footnote-tooltip {
+    position: absolute;
+    top: calc(100% + 14px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    width: max-content;
+    max-width: 320px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    text-align: left;
+    overflow-wrap: anywhere;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity var(--transition), visibility var(--transition);
+}
+/* Invisible bridge so the mouse can move from the number into the popup. */
+.footnote-tooltip::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -16px;
+    height: 16px;
+}
+@media (hover: hover) {
+    .post-content sup.fn:hover .footnote-tooltip,
+    .post-content sup.fn:focus-within .footnote-tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+}
+.post-content sup.fn.open .footnote-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+.footnotes {
+    margin-top: 3em;
+    padding-top: 1.5em;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.9rem;
+}
+.post-content .footnotes ol { margin: 0; }
+.post-content .footnotes li { color: var(--text-tertiary); }
+.post-content a.footnote-backref {
+    margin-left: 4px;
+    border-bottom: none;
+    font-size: 0.85em;
+}
+
 /* Footer */
 .footer {
     text-align: center;
@@ -482,4 +568,15 @@ body {
     .post-content h1 { font-size: 1.6rem; }
     .post-content h2 { font-size: 1.3rem; }
     .post-content pre { padding: 14px 16px; }
+    /* On phones the note opens as a card along the bottom of the screen. */
+    .footnote-tooltip {
+        position: fixed;
+        top: auto;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        max-width: none;
+        transform: none;
+    }
 }
