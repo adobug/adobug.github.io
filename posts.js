@@ -15,6 +15,14 @@ const POSTS = [
         date: "2026-11-06",
         file: 'posts/on-multiple-accounts.md',
         excerpt: "accounts, accounts, accounts...",
+        tags: ['social','on:'],
+    },
+    {
+        slug: 'more-on-social-media',
+        title: 'More on social media',
+        date: '2026-11-07',  // set to the publish date
+        file: 'posts/more-on-social-media.md',
+        excerpt: 'A follow-up to my last post.',
         tags: ['social'],
     },
 ];
